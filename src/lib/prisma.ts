@@ -1,5 +1,9 @@
-import { PrismaPg } from "@prisma/adapter-pg";
+import { neonConfig } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import ws from "ws";
 import { PrismaClient } from "@/generated/prisma/client";
+
+neonConfig.webSocketConstructor = ws;
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -12,7 +16,7 @@ function crearCliente() {
     throw new Error("Falta la variable de entorno DATABASE_URL");
   }
 
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  return new PrismaClient({ adapter: new PrismaNeon({ connectionString }) });
 }
 
 export const prisma = globalForPrisma.prisma ?? crearCliente();
