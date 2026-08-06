@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import prisma from "@/lib/prisma";
+import ResumenSitio from "@/components/ResumenSitio";
 
 export default async function SitePage({
   params,
@@ -31,6 +32,8 @@ export default async function SitePage({
       <Typography variant="body2" sx={{ opacity: 0.6 }}>
         {site.domain}
       </Typography>
+
+      <ResumenSitio siteId={site.id} />
     </Stack>
   );
 }

@@ -36,7 +36,10 @@ npm run dev
 - **Fase 5 — Layout del dashboard**: completa. Sidebar fijo con listado de sitios
   (color + nombre), página de detalle por sitio (`/site/[id]`) y botón de cerrar
   sesión.
-- Fases 6 a 8: pendientes.
+- **Fase 6 — Vista de resumen**: completa. `GET /api/sites/:id/metrics?range=7d|30d|90d`
+  (visitas totales, sesiones únicas, visitas por día, top páginas, top referrers) y la
+  UI correspondiente (KPIs, línea de visitas, barras de ranking) en `/site/[id]`.
+- Fases 7 y 8: pendientes.
 
 ## Variables de entorno de auth
 
