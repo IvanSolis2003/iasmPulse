@@ -27,8 +27,8 @@ npm run dev
 
 - **Fase 1 — Setup base**: completa. Proyecto, schema Prisma, tema MUI y migración
   inicial aplicada contra Neon.
-- **Fase 2 — Endpoint de ingesta**: `POST /api/collect` listo, con CORS abierto para
-  recibir eventos desde los sitios trackeados.
+- **Fase 2 — Endpoint de ingesta**: completa. `POST /api/collect` (CORS abierto) y
+  `GET`/`POST /api/sites` listos.
 - Fases 3 a 8: pendientes.
 
 ## Ramas
