@@ -44,7 +44,8 @@ npm run dev
   UI en `/site/[id]` (pestaña Heatmap): selector de página + overlay de calor sobre
   un mockup, dibujado en `<canvas>` nativo con una rampa secuencial derivada del
   verde del tema (sin librerías nuevas).
-- Fase 8: pendiente.
+- **Fase 8 — Deploy**: pendiente el paso final (merge a `main` + configuración en
+  Vercel), ver sección "Deploy" más abajo.
 
 ## Variables de entorno de auth
 
@@ -75,3 +76,18 @@ tal como en `.env.example`).
 
 - `main` — rama estable, desde donde se despliega
 - `staging` — integración de cada etapa
+
+## Deploy (Vercel)
+
+1. Importar el repo en Vercel apuntando a la rama `main`.
+2. Variables de entorno del proyecto en Vercel (valores reales, sin escapar `$`):
+   - `DATABASE_URL` — connection string de Neon (usar la de pooler)
+   - `AUTH_SECRET`
+   - `ADMIN_EMAIL`
+   - `ADMIN_PASSWORD_HASH`
+3. Build command por defecto (`next build`) y output por defecto — no requieren
+   configuración especial.
+4. Dominio propio (ej. `pulse.iasmtech.com`) desde la pestaña Domains del proyecto
+   en Vercel.
+5. Antes del primer deploy en un ambiente nuevo, correr `npx prisma migrate deploy`
+   contra la misma base de Neon (las migraciones ya están en `prisma/migrations`).
