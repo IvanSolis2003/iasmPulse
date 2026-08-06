@@ -25,9 +25,11 @@ npm run dev
 
 ## Estado
 
-- **Fase 1 — Setup base**: proyecto, schema Prisma y tema MUI listos. Falta correr la
-  migración inicial contra Neon.
-- Fases 2 a 8: pendientes.
+- **Fase 1 — Setup base**: completa. Proyecto, schema Prisma, tema MUI y migración
+  inicial aplicada contra Neon.
+- **Fase 2 — Endpoint de ingesta**: `POST /api/collect` listo, con CORS abierto para
+  recibir eventos desde los sitios trackeados.
+- Fases 3 a 8: pendientes.
 
 ## Ramas
 
