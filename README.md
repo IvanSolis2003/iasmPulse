@@ -33,7 +33,10 @@ npm run dev
   en un sitio real para la prueba de campo.
 - **Fase 4 — Auth**: completa. Login de un solo usuario (NextAuth v5 + Credentials)
   protege todo excepto `/login`, `/api/auth/*`, `/api/collect` y `/track.js`.
-- Fases 5 a 8: pendientes.
+- **Fase 5 — Layout del dashboard**: completa. Sidebar fijo con listado de sitios
+  (color + nombre), página de detalle por sitio (`/site/[id]`) y botón de cerrar
+  sesión.
+- Fases 6 a 8: pendientes.
 
 ## Variables de entorno de auth
 
