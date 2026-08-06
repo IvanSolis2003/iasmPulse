@@ -39,7 +39,12 @@ npm run dev
 - **Fase 6 — Vista de resumen**: completa. `GET /api/sites/:id/metrics?range=7d|30d|90d`
   (visitas totales, sesiones únicas, visitas por día, top páginas, top referrers) y la
   UI correspondiente (KPIs, línea de visitas, barras de ranking) en `/site/[id]`.
-- Fases 7 y 8: pendientes.
+- **Fase 7 — Vista de heatmap**: completa. `GET /api/sites/:id/heatmap` (sin `url`
+  lista páginas con conteo de clicks; con `url` devuelve los puntos agregados) y la
+  UI en `/site/[id]` (pestaña Heatmap): selector de página + overlay de calor sobre
+  un mockup, dibujado en `<canvas>` nativo con una rampa secuencial derivada del
+  verde del tema (sin librerías nuevas).
+- Fase 8: pendiente.
 
 ## Variables de entorno de auth
 
