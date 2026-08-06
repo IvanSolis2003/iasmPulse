@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Site {
+  id        String       @id @default(cuid())
+  name      String
+  domain    String       @unique
+  color     String?
+  createdAt DateTime     @default(now())
+  events    Event[]
+  clicks    ClickEvent[]
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id])
+  type      String
+  url       String
+  referrer  String?
+  sessionId String
+  metadata  Json?
+  timestamp DateTime @default(now())
+
+  @@index([siteId, timestamp])
+}
+
+model ClickEvent {
+  id             String   @id @default(cuid())
+  siteId         String
+  site           Site     @relation(fields: [siteId], references: [id])
+  url            String
+  x              Float
+  y              Float
+  viewportWidth  Int
+  viewportHeight Int
+  timestamp      DateTime @default(now())
+
+  @@index([siteId, url])
+}

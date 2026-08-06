@@ -1,12 +1,48 @@
 # iasmPulse
 
-Repositorio de iasmPulse.
+Panel de monitoreo y analytics de un solo usuario para trackear las apps de iasmtech:
+pageviews, clicks, heatmaps y métricas generales.
+
+Ver [PLAN.md](PLAN.md) para el alcance completo y las fases.
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript
+- Prisma 7 + Postgres (Neon)
+- MUI (Material UI) — tema verde/blanco basado en el design system v2.1
+- Vercel
+
+## Puesta en marcha
+
+```bash
+npm install
+cp .env.example .env
+npx prisma migrate dev
+npm run dev
+```
+
+`DATABASE_URL` debe apuntar a la base Neon del proyecto.
 
 ## Estado
 
-Proyecto recién inicializado. Todavía sin código.
+- **Fase 1 — Setup base**: completa. Proyecto, schema Prisma, tema MUI y migración
+  inicial aplicada contra Neon.
+- **Fase 2 — Endpoint de ingesta**: completa. `POST /api/collect` (CORS abierto) y
+  `GET`/`POST /api/sites` listos.
+- **Fase 3 — Script de tracking**: `public/track.js` (~2.1kb) listo. Falta instalarlo
+  en un sitio real para la prueba de campo.
+- Fases 4 a 8: pendientes.
+
+## Instalar el script de tracking en un sitio
+
+```html
+<script src="https://pulse.iasmtech.com/track.js" data-site="dominio-del-sitio"></script>
+```
+
+`data-site` debe ser exactamente el valor de `domain` con el que se registró el
+`Site` en iasmPulse.
 
 ## Ramas
 
-- `main` — rama estable
-- `staging` — rama de integración previa a `main`
+- `main` — rama estable, desde donde se despliega
+- `staging` — integración de cada etapa
