@@ -29,7 +29,18 @@ npm run dev
   inicial aplicada contra Neon.
 - **Fase 2 — Endpoint de ingesta**: completa. `POST /api/collect` (CORS abierto) y
   `GET`/`POST /api/sites` listos.
-- Fases 3 a 8: pendientes.
+- **Fase 3 — Script de tracking**: `public/track.js` (~2.1kb) listo. Falta instalarlo
+  en un sitio real para la prueba de campo.
+- Fases 4 a 8: pendientes.
+
+## Instalar el script de tracking en un sitio
+
+```html
+<script src="https://pulse.iasmtech.com/track.js" data-site="dominio-del-sitio"></script>
+```
+
+`data-site` debe ser exactamente el valor de `domain` con el que se registró el
+`Site` en iasmPulse.
 
 ## Ramas
 
