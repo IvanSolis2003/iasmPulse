@@ -56,7 +56,7 @@ function BarraRanking({ titulo, datos }: { titulo: string; datos: { nombre: stri
           yAxis={[{ dataKey: "nombre", label: undefined }]}
           xAxis={[{ label: undefined }]}
           series={[{ dataKey: "visitas", color: verde, label: "Visitas" }]}
-          margin={{ left: 140 }}
+          margin={{ left: 110 }}
           hideLegend
         />
       )}
@@ -109,7 +109,7 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
       <Box sx={{ opacity: cargando ? 0.5 : 1, transition: "opacity 0.15s ease" }}>
         {metricas && (
           <Stack spacing={3}>
-            <Stack direction="row" spacing={2}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
               <StatTile label="Visitas totales" value={metricas.totalVisitas} />
               <StatTile label="Sesiones únicas" value={metricas.sesionesUnicas} />
             </Stack>
@@ -127,7 +127,7 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
               />
             </Paper>
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
               <BarraRanking titulo="Top páginas" datos={metricas.topPaginas} />
               <BarraRanking titulo="Top referrers" datos={metricas.topReferrers} />
             </Stack>

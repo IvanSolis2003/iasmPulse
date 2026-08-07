@@ -12,7 +12,13 @@ type SiteResumen = {
   color: string | null;
 };
 
-export default function SidebarSites({ sites }: { sites: SiteResumen[] }) {
+export default function SidebarSites({
+  sites,
+  onNavigate,
+}: {
+  sites: SiteResumen[];
+  onNavigate?: () => void;
+}) {
   if (sites.length === 0) {
     return (
       <Typography variant="body2" sx={{ px: 2, opacity: 0.5 }}>
@@ -28,6 +34,7 @@ export default function SidebarSites({ sites }: { sites: SiteResumen[] }) {
           key={site.id}
           component={Link}
           href={`/site/${site.id}`}
+          onClick={onNavigate}
           sx={{ borderRadius: 0, gap: 1.5 }}
         >
           <Box

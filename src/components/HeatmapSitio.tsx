@@ -114,12 +114,16 @@ export default function HeatmapSitio({ siteId }: { siteId: string }) {
 
   return (
     <Stack spacing={2} sx={{ mt: 3 }}>
-      <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{ alignItems: { xs: "stretch", sm: "center" } }}
+      >
         <Select
           size="small"
           value={urlSeleccionada}
           onChange={(e) => setUrlSeleccionada(e.target.value)}
-          sx={{ minWidth: 240 }}
+          sx={{ minWidth: { sm: 240 }, width: { xs: "100%", sm: "auto" } }}
         >
           {paginas.map((pagina) => (
             <MenuItem key={pagina.url} value={pagina.url}>
