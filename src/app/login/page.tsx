@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
@@ -51,10 +52,16 @@ export default function LoginPage() {
     >
       <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: 360 }}>
         <Stack spacing={3}>
-          <Stack spacing={0.5}>
-            <Typography variant="caption" sx={{ textTransform: "uppercase", opacity: 0.5 }}>
-              iasmtech
-            </Typography>
+          <Stack spacing={1.5} sx={{ alignItems: "flex-start" }}>
+            <Image
+              src="/logo-iasmtech.png"
+              alt="iasmtech"
+              width={640}
+              height={280}
+              style={{ width: "100%", maxWidth: 260, height: "auto" }}
+              unoptimized
+              priority
+            />
             <Typography variant="h1" color="primary">
               iasmPulse
             </Typography>
