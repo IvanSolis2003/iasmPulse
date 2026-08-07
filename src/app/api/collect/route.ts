@@ -57,6 +57,15 @@ function esEvento(e: unknown): e is EventoPayload {
   );
 }
 
+function extraerHost(valor: string | null): string | null {
+  if (!valor) return null;
+  try {
+    return new URL(valor).host;
+  } catch {
+    return null;
+  }
+}
+
 function validarPayload(body: unknown): CollectPayload | null {
   if (typeof body !== "object" || body === null) return null;
   const b = body as Record<string, unknown>;
@@ -105,6 +114,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Sitio no registrado" },
       { status: 404, headers: corsHeaders },
+    );
+  }
+
+  const hostOrigen =
+    extraerHost(request.headers.get("origin")) ??
+    extraerHost(request.headers.get("referer"));
+
+  if (hostOrigen !== site.domain) {
+    return NextResponse.json(
+      { error: "El origen de la solicitud no coincide con el sitio" },
+      { status: 403, headers: corsHeaders },
     );
   }
 
