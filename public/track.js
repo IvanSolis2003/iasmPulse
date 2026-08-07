@@ -29,9 +29,17 @@
 
   var sessionId = obtenerSessionId();
   var cola = [];
+  var MAX_COLA = 50;
 
   function agregarEvento(evento) {
     cola.push(evento);
+  }
+
+  function reencolar(eventos) {
+    cola = eventos.concat(cola);
+    if (cola.length > MAX_COLA) {
+      cola = cola.slice(cola.length - MAX_COLA);
+    }
   }
 
   function vaciarCola(porCierre) {
@@ -41,7 +49,8 @@
     var payload = JSON.stringify({ site: site, sessionId: sessionId, events: eventos });
 
     if (porCierre && navigator.sendBeacon) {
-      navigator.sendBeacon(endpoint, new Blob([payload], { type: "application/json" }));
+      var enviado = navigator.sendBeacon(endpoint, new Blob([payload], { type: "application/json" }));
+      if (!enviado) reencolar(eventos);
       return;
     }
 
@@ -50,7 +59,13 @@
       headers: { "Content-Type": "application/json" },
       body: payload,
       keepalive: true,
-    }).catch(function () {});
+    })
+      .then(function (respuesta) {
+        if (!respuesta.ok) reencolar(eventos);
+      })
+      .catch(function () {
+        reencolar(eventos);
+      });
   }
 
   agregarEvento({
