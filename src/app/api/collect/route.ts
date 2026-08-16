@@ -66,6 +66,21 @@ function extraerHost(valor: string | null): string | null {
   }
 }
 
+function obtenerIpCliente(request: NextRequest): string | null {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0].trim();
+  return request.headers.get("x-real-ip");
+}
+
+function esIpExcluida(ip: string | null): boolean {
+  if (!ip) return false;
+  const excluidas = (process.env.EXCLUDED_IPS ?? "")
+    .split(",")
+    .map((valor) => valor.trim())
+    .filter(Boolean);
+  return excluidas.includes(ip);
+}
+
 function validarPayload(body: unknown): CollectPayload | null {
   if (typeof body !== "object" || body === null) return null;
   const b = body as Record<string, unknown>;
@@ -86,6 +101,10 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  if (esIpExcluida(obtenerIpCliente(request))) {
+    return NextResponse.json({ ok: true, excluido: true }, { status: 202, headers: corsHeaders });
+  }
+
   let body: unknown;
 
   try {

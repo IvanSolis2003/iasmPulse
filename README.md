@@ -76,6 +76,8 @@ tal como en `.env.example`).
 
 - `main` — rama estable, desde donde se despliega
 - `staging` — integración de cada etapa
+- `feature/*` — cada cambio nuevo arranca en su propia rama desde `staging`,
+  y se mergea a `staging` al terminar
 
 ## Deploy (Vercel)
 
@@ -85,6 +87,8 @@ tal como en `.env.example`).
    - `AUTH_SECRET`
    - `ADMIN_EMAIL`
    - `ADMIN_PASSWORD_HASH`
+   - `EXCLUDED_IPS` (opcional) — IPs a excluir de las métricas (las propias
+     visitas de Iván), separadas por coma
 3. Build command por defecto (`next build`) y output por defecto — no requieren
    configuración especial.
 4. Dominio propio (ej. `pulse.iasmtech.com`) desde la pestaña Domains del proyecto
