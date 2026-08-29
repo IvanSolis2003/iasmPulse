@@ -24,6 +24,7 @@ import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
 import SensorsOutlinedIcon from "@mui/icons-material/SensorsOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import MainCard from "@/components/MainCard";
@@ -51,6 +52,7 @@ type GlobalMetrics = {
   sites: SiteRendimiento[];
   topPaginas: { nombre: string; visitas: number }[];
   topReferrers: { nombre: string; visitas: number }[];
+  paises?: { nombre: string; visitas: number; porcentaje?: number }[];
 };
 
 const RANGOS = [
@@ -315,8 +317,53 @@ export default function PanelGlobal() {
             </MainCard>
 
             <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <MainCard title="Top Páginas en el Ecosistema">
+              <Grid size={{ xs: 12, md: 4 }}>
+                <MainCard
+                  title={
+                    <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
+                      <PublicOutlinedIcon sx={{ color: verde }} />
+                      <Typography variant="h3" sx={{ fontWeight: 600 }}>
+                        Países del Ecosistema
+                      </Typography>
+                    </Stack>
+                  }
+                  sx={{ height: "100%" }}
+                >
+                  {!metricas.paises || metricas.paises.length === 0 ? (
+                    <Typography variant="body2" sx={{ py: 3, textAlign: "center", color: "text.secondary" }}>
+                      Sin datos de geolocalización aún
+                    </Typography>
+                  ) : (
+                    <Stack spacing={1.75}>
+                      {metricas.paises.map((item) => (
+                        <Box key={item.nombre}>
+                          <Stack direction="row" sx={{ justifyContent: "space-between", mb: 0.5 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {item.nombre}
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
+                              {item.visitas} ({item.porcentaje ?? 0}%)
+                            </Typography>
+                          </Stack>
+                          <LinearProgress
+                            variant="determinate"
+                            value={item.porcentaje ?? 0}
+                            sx={{
+                              height: 6,
+                              borderRadius: 3,
+                              backgroundColor: "rgba(0,0,0,0.06)",
+                              "& .MuiLinearProgress-bar": { backgroundColor: verde, borderRadius: 3 },
+                            }}
+                          />
+                        </Box>
+                      ))}
+                    </Stack>
+                  )}
+                </MainCard>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 4 }}>
+                <MainCard title="Top Páginas Globales">
                   {metricas.topPaginas.length === 0 ? (
                     <Typography variant="body2" sx={{ py: 3, textAlign: "center", color: "text.secondary" }}>
                       Sin datos en este rango
@@ -330,15 +377,16 @@ export default function PanelGlobal() {
                         yAxis={[{ dataKey: "nombre", scaleType: "band", tickLabelStyle: { fontSize: 11 } }]}
                         xAxis={[{ tickLabelStyle: { fontSize: 11 } }]}
                         series={[{ dataKey: "visitas", color: verde, label: "Visitas" }]}
-                        margin={{ left: 120, right: 20, top: 10, bottom: 20 }}
+                        margin={{ left: 110, right: 15, top: 10, bottom: 20 }}
                         hideLegend
                       />
                     </Box>
                   )}
                 </MainCard>
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <MainCard title="Top Fuentes de Tráfico (Referrers)">
+
+              <Grid size={{ xs: 12, md: 4 }}>
+                <MainCard title="Top Fuentes de Tráfico">
                   {metricas.topReferrers.length === 0 ? (
                     <Typography variant="body2" sx={{ py: 3, textAlign: "center", color: "text.secondary" }}>
                       Sin datos en este rango
@@ -352,7 +400,7 @@ export default function PanelGlobal() {
                         yAxis={[{ dataKey: "nombre", scaleType: "band", tickLabelStyle: { fontSize: 11 } }]}
                         xAxis={[{ tickLabelStyle: { fontSize: 11 } }]}
                         series={[{ dataKey: "visitas", color: verdeOscuro, label: "Visitas" }]}
-                        margin={{ left: 120, right: 20, top: 10, bottom: 20 }}
+                        margin={{ left: 110, right: 15, top: 10, bottom: 20 }}
                         hideLegend
                       />
                     </Box>
@@ -370,4 +418,3 @@ export default function PanelGlobal() {
     </Stack>
   );
 }
-

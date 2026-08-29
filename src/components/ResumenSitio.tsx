@@ -19,6 +19,7 @@ import ComputerOutlinedIcon from "@mui/icons-material/ComputerOutlined";
 import TabletMacOutlinedIcon from "@mui/icons-material/TabletMacOutlined";
 import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
 import TrackChangesOutlinedIcon from "@mui/icons-material/TrackChangesOutlined";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import MainCard from "@/components/MainCard";
@@ -40,6 +41,7 @@ type Metricas = {
   topReferrers: ItemRanking[];
   dispositivos?: ItemRanking[];
   navegadores?: ItemRanking[];
+  paises?: ItemRanking[];
   campanas?: ItemRanking[];
   eventosPersonalizados?: ItemRanking[];
 };
@@ -111,14 +113,16 @@ function TarjetaDistribucion({
               if (item.nombre === "Desktop") return <ComputerOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
               if (item.nombre === "Móvil") return <SmartphoneOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
               if (item.nombre === "Tablet") return <TabletMacOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
-              return <WebAssetOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
+              return null;
             };
+
+            const iconNode = getIcon();
 
             return (
               <Box key={item.nombre}>
                 <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
                   <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                    {getIcon()}
+                    {iconNode}
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {item.nombre}
                     </Typography>
@@ -292,16 +296,17 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
-                  titulo="Dispositivos de Acceso"
-                  icono={<DevicesOutlinedIcon sx={{ color: verde }} />}
-                  datos={metricas.dispositivos}
+                  titulo="Países y Ubicación"
+                  icono={<PublicOutlinedIcon sx={{ color: verde }} />}
+                  datos={metricas.paises}
+                  emptyText="Sin datos de ubicación registrados"
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
-                  titulo="Navegadores Web"
-                  icono={<WebAssetOutlinedIcon sx={{ color: verdeOscuro }} />}
-                  datos={metricas.navegadores}
+                  titulo="Dispositivos de Acceso"
+                  icono={<DevicesOutlinedIcon sx={{ color: verdeOscuro }} />}
+                  datos={metricas.dispositivos}
                 />
               </Grid>
             </Grid>
@@ -309,21 +314,33 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
-                  titulo="Campañas de Marketing (UTMs)"
-                  icono={<CampaignOutlinedIcon sx={{ color: verde }} />}
-                  datos={metricas.campanas}
-                  emptyText="Sin campañas UTM detectadas en este rango"
+                  titulo="Navegadores Web"
+                  icono={<WebAssetOutlinedIcon sx={{ color: verde }} />}
+                  datos={metricas.navegadores}
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
-                  titulo="Objetivos y Conversiones"
-                  icono={<TrackChangesOutlinedIcon sx={{ color: verdeOscuro }} />}
-                  datos={metricas.eventosPersonalizados}
-                  emptyText="Sin eventos de conversión registrados"
+                  titulo="Campañas de Marketing (UTMs)"
+                  icono={<CampaignOutlinedIcon sx={{ color: verdeOscuro }} />}
+                  datos={metricas.campanas}
+                  emptyText="Sin campañas UTM detectadas en este rango"
                 />
               </Grid>
             </Grid>
+
+            {metricas.eventosPersonalizados && metricas.eventosPersonalizados.length > 0 && (
+              <Grid container spacing={2.5}>
+                <Grid size={{ xs: 12 }}>
+                  <TarjetaDistribucion
+                    titulo="Objetivos y Conversiones Registradas"
+                    icono={<TrackChangesOutlinedIcon sx={{ color: verdeOscuro }} />}
+                    datos={metricas.eventosPersonalizados}
+                    emptyText="Sin eventos de conversión registrados"
+                  />
+                </Grid>
+              </Grid>
+            )}
           </Stack>
         ) : (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
