@@ -34,7 +34,7 @@ export async function GET(
 
   const pageviews = await prisma.event.findMany({
     where: { siteId: id, type: "pageview", timestamp: { gte: desde } },
-    select: { url: true, referrer: true, sessionId: true, timestamp: true },
+    select: { url: true, referrer: true, sessionId: true, metadata: true, timestamp: true },
   });
 
   const porDiaMapa = new Map<string, number>();
@@ -52,6 +52,9 @@ export async function GET(
 
   const paginasMapa = new Map<string, number>();
   const referrersMapa = new Map<string, number>();
+  const dispositivosMapa = new Map<string, number>();
+  const navegadoresMapa = new Map<string, number>();
+  const osMapa = new Map<string, number>();
   const sesiones = new Set<string>();
 
   for (const evento of pageviews) {
@@ -59,13 +62,29 @@ export async function GET(
     const referrer = evento.referrer || "Directo";
     referrersMapa.set(referrer, (referrersMapa.get(referrer) ?? 0) + 1);
     sesiones.add(evento.sessionId);
+
+    if (evento.metadata && typeof evento.metadata === "object") {
+      const meta = evento.metadata as Record<string, unknown>;
+      const dev = typeof meta.device === "string" ? meta.device : "Desktop";
+      const browser = typeof meta.browser === "string" ? meta.browser : "Otro";
+      const os = typeof meta.os === "string" ? meta.os : "Otro";
+
+      dispositivosMapa.set(dev, (dispositivosMapa.get(dev) ?? 0) + 1);
+      navegadoresMapa.set(browser, (navegadoresMapa.get(browser) ?? 0) + 1);
+      osMapa.set(os, (osMapa.get(os) ?? 0) + 1);
+    }
   }
 
   function topN(mapa: Map<string, number>, n: number) {
+    const total = Array.from(mapa.values()).reduce((a, b) => a + b, 0);
     return Array.from(mapa.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, n)
-      .map(([nombre, visitas]) => ({ nombre, visitas }));
+      .map(([nombre, visitas]) => ({
+        nombre,
+        visitas,
+        porcentaje: total > 0 ? Math.round((visitas / total) * 100) : 0,
+      }));
   }
 
   return NextResponse.json({
@@ -74,5 +93,8 @@ export async function GET(
     porDia: Array.from(porDiaMapa.entries()).map(([fecha, visitas]) => ({ fecha, visitas })),
     topPaginas: topN(paginasMapa, 10),
     topReferrers: topN(referrersMapa, 10),
+    dispositivos: topN(dispositivosMapa, 5),
+    navegadores: topN(navegadoresMapa, 5),
+    sistemasOperativos: topN(osMapa, 5),
   });
 }
