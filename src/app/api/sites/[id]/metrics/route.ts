@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { obtenerPaisInfo } from "@/lib/paises";
 
 const RANGO_POR_DEFECTO = 7;
 const RANGO_MAXIMO = 90;
@@ -60,6 +61,7 @@ export async function GET(
   const osMapa = new Map<string, number>();
   const campanasMapa = new Map<string, number>();
   const customEventsMapa = new Map<string, number>();
+  const paisesMapa = new Map<string, number>();
   const sesiones = new Set<string>();
 
   for (const evento of pageviews) {
@@ -77,6 +79,12 @@ export async function GET(
       dispositivosMapa.set(dev, (dispositivosMapa.get(dev) ?? 0) + 1);
       navegadoresMapa.set(browser, (navegadoresMapa.get(browser) ?? 0) + 1);
       osMapa.set(os, (osMapa.get(os) ?? 0) + 1);
+
+      if (typeof meta.country === "string" && meta.country.length > 0) {
+        const info = obtenerPaisInfo(meta.country);
+        const etiqueta = `${info.bandera} ${info.nombre}`;
+        paisesMapa.set(etiqueta, (paisesMapa.get(etiqueta) ?? 0) + 1);
+      }
 
       if (meta.utm && typeof meta.utm === "object") {
         const utm = meta.utm as Record<string, unknown>;
@@ -122,6 +130,7 @@ export async function GET(
     dispositivos: topN(dispositivosMapa, 5),
     navegadores: topN(navegadoresMapa, 5),
     sistemasOperativos: topN(osMapa, 5),
+    paises: topN(paisesMapa, 8),
     campanas: topN(campanasMapa, 8),
     eventosPersonalizados: topN(customEventsMapa, 10),
   });

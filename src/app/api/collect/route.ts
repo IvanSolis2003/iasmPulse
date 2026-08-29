@@ -147,6 +147,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const countryHeader =
+    request.headers.get("x-vercel-ip-country") ||
+    request.headers.get("cf-ipcountry") ||
+    undefined;
+
   const eventos = payload.events.filter(esEvento);
   const clicks = payload.events.filter(esClick);
 
@@ -159,7 +164,12 @@ export async function POST(request: NextRequest) {
             type: e.type,
             url: e.url,
             referrer: e.referrer,
-            metadata: e.metadata,
+            metadata:
+              typeof e.metadata === "object" && e.metadata !== null
+                ? { ...(e.metadata as Record<string, unknown>), country: countryHeader }
+                : countryHeader
+                ? { country: countryHeader }
+                : undefined,
           })),
         })
       : Promise.resolve(),

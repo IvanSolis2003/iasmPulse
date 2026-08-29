@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { obtenerPaisInfo } from "@/lib/paises";
 
 const RANGO_POR_DEFECTO = 7;
 const RANGO_MAXIMO = 90;
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     }),
     prisma.event.findMany({
       where: { type: "pageview", timestamp: { gte: desde } },
-      select: { siteId: true, url: true, referrer: true, sessionId: true, timestamp: true },
+      select: { siteId: true, url: true, referrer: true, sessionId: true, metadata: true, timestamp: true },
     }),
     prisma.clickEvent.findMany({
       where: { timestamp: { gte: desde } },
@@ -77,6 +78,7 @@ export async function GET(request: NextRequest) {
 
   const paginasGlobales = new Map<string, number>();
   const referrersGlobales = new Map<string, number>();
+  const paisesGlobales = new Map<string, number>();
   const sesionesGlobales = new Set<string>();
 
   for (const pv of pageviews) {
@@ -98,6 +100,15 @@ export async function GET(request: NextRequest) {
 
     const ref = pv.referrer || "Directo";
     referrersGlobales.set(ref, (referrersGlobales.get(ref) ?? 0) + 1);
+
+    if (pv.metadata && typeof pv.metadata === "object") {
+      const meta = pv.metadata as Record<string, unknown>;
+      if (typeof meta.country === "string" && meta.country.length > 0) {
+        const info = obtenerPaisInfo(meta.country);
+        const etiqueta = `${info.bandera} ${info.nombre}`;
+        paisesGlobales.set(etiqueta, (paisesGlobales.get(etiqueta) ?? 0) + 1);
+      }
+    }
   }
 
   for (const cl of clicks) {
@@ -138,10 +149,15 @@ export async function GET(request: NextRequest) {
   });
 
   function topN(mapa: Map<string, number>, n: number) {
+    const total = Array.from(mapa.values()).reduce((a, b) => a + b, 0);
     return Array.from(mapa.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, n)
-      .map(([nombre, visitas]) => ({ nombre, visitas }));
+      .map(([nombre, visitas]) => ({
+        nombre,
+        visitas,
+        porcentaje: total > 0 ? Math.round((visitas / total) * 100) : 0,
+      }));
   }
 
   return NextResponse.json({
@@ -153,6 +169,6 @@ export async function GET(request: NextRequest) {
     sites: sitesRendimiento,
     topPaginas: topN(paginasGlobales, 10),
     topReferrers: topN(referrersGlobales, 10),
+    paises: topN(paisesGlobales, 8),
   });
 }
-
