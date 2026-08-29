@@ -60,6 +60,25 @@
     return "Otro";
   }
 
+  function obtenerUTMs() {
+    var params = new URLSearchParams(location.search);
+    var utmSource = params.get("utm_source");
+    var utmMedium = params.get("utm_medium");
+    var utmCampaign = params.get("utm_campaign");
+    var utmTerm = params.get("utm_term");
+    var utmContent = params.get("utm_content");
+
+    if (!utmSource && !utmMedium && !utmCampaign) return undefined;
+
+    return {
+      source: utmSource || undefined,
+      medium: utmMedium || undefined,
+      campaign: utmCampaign || undefined,
+      term: utmTerm || undefined,
+      content: utmContent || undefined,
+    };
+  }
+
   var sessionId = obtenerSessionId();
   var cola = [];
   var MAX_COLA = 50;
@@ -101,6 +120,25 @@
       });
   }
 
+  window.iasmPulse = {
+    track: function (eventName, eventMetadata) {
+      if (!eventName || typeof eventName !== "string") return;
+      var meta = { eventName: eventName };
+      if (eventMetadata && typeof eventMetadata === "object") {
+        for (var k in eventMetadata) {
+          if (Object.prototype.hasOwnProperty.call(eventMetadata, k)) {
+            meta[k] = eventMetadata[k];
+          }
+        }
+      }
+      agregarEvento({
+        type: "custom",
+        url: location.pathname + location.search,
+        metadata: meta,
+      });
+    },
+  };
+
   agregarEvento({
     type: "pageview",
     url: location.pathname + location.search,
@@ -111,10 +149,20 @@
       os: detectarOS(),
       screenWidth: window.innerWidth,
       screenHeight: window.innerHeight,
+      utm: obtenerUTMs(),
     },
   });
 
   document.addEventListener("click", function (evento) {
+    var target = evento.target;
+    var pulseEl = target && target.closest ? target.closest("[data-pulse-event]") : null;
+    if (pulseEl) {
+      var evtName = pulseEl.getAttribute("data-pulse-event");
+      if (evtName) {
+        window.iasmPulse.track(evtName);
+      }
+    }
+
     agregarEvento({
       type: "click",
       url: location.pathname + location.search,
@@ -123,7 +171,7 @@
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
     });
-  });
+  }, true);
 
   setInterval(function () {
     vaciarCola(false);

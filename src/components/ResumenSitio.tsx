@@ -17,6 +17,8 @@ import WebAssetOutlinedIcon from "@mui/icons-material/WebAssetOutlined";
 import SmartphoneOutlinedIcon from "@mui/icons-material/SmartphoneOutlined";
 import ComputerOutlinedIcon from "@mui/icons-material/ComputerOutlined";
 import TabletMacOutlinedIcon from "@mui/icons-material/TabletMacOutlined";
+import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
+import TrackChangesOutlinedIcon from "@mui/icons-material/TrackChangesOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import MainCard from "@/components/MainCard";
@@ -32,11 +34,14 @@ type ItemRanking = {
 type Metricas = {
   totalVisitas: number;
   sesionesUnicas: number;
+  totalConversiones?: number;
   porDia: { fecha: string; visitas: number }[];
   topPaginas: ItemRanking[];
   topReferrers: ItemRanking[];
   dispositivos?: ItemRanking[];
   navegadores?: ItemRanking[];
+  campanas?: ItemRanking[];
+  eventosPersonalizados?: ItemRanking[];
 };
 
 const RANGOS = [
@@ -76,10 +81,12 @@ function TarjetaDistribucion({
   titulo,
   icono,
   datos,
+  emptyText = "Sin datos suficientes",
 }: {
   titulo: string;
   icono: React.ReactNode;
   datos?: ItemRanking[];
+  emptyText?: string;
 }) {
   return (
     <MainCard
@@ -95,7 +102,7 @@ function TarjetaDistribucion({
     >
       {!datos || datos.length === 0 ? (
         <Typography variant="body2" sx={{ py: 3, textAlign: "center", color: "text.secondary" }}>
-          Sin datos suficientes
+          {emptyText}
         </Typography>
       ) : (
         <Stack spacing={2}>
@@ -223,22 +230,31 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
         {metricas ? (
           <Stack spacing={3}>
             <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <KpiCard
                   variant="dark"
                   icon={<VisibilityOutlinedIcon />}
                   label="Visitas Totales"
                   value={metricas.totalVisitas}
-                  sublabel="Pageviews en el período seleccionado"
+                  sublabel="Pageviews en el período"
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <KpiCard
                   variant="light"
                   icon={<FingerprintOutlinedIcon />}
                   label="Sesiones Únicas"
                   value={metricas.sesionesUnicas}
                   sublabel="Visitantes únicos contabilizados"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <KpiCard
+                  variant="light"
+                  icon={<TrackChangesOutlinedIcon />}
+                  label="Conversiones & Eventos"
+                  value={metricas.totalConversiones ?? 0}
+                  sublabel="Acciones clave registradas"
                 />
               </Grid>
             </Grid>
@@ -286,6 +302,25 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
                   titulo="Navegadores Web"
                   icono={<WebAssetOutlinedIcon sx={{ color: verdeOscuro }} />}
                   datos={metricas.navegadores}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
+                  titulo="Campañas de Marketing (UTMs)"
+                  icono={<CampaignOutlinedIcon sx={{ color: verde }} />}
+                  datos={metricas.campanas}
+                  emptyText="Sin campañas UTM detectadas en este rango"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
+                  titulo="Objetivos y Conversiones"
+                  icono={<TrackChangesOutlinedIcon sx={{ color: verdeOscuro }} />}
+                  datos={metricas.eventosPersonalizados}
+                  emptyText="Sin eventos de conversión registrados"
                 />
               </Grid>
             </Grid>
