@@ -79,6 +79,21 @@
     };
   }
 
+  function esEnlaceSaliente(a) {
+    if (!a || !a.href) return false;
+    var href = a.href;
+    if (href.indexOf("mailto:") === 0 || href.indexOf("tel:") === 0 || href.indexOf("whatsapp:") === 0) return true;
+    if (href.indexOf("http://") === 0 || href.indexOf("https://") === 0) {
+      try {
+        var urlObj = new URL(href);
+        return urlObj.hostname !== location.hostname && urlObj.hostname.length > 0;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }
+
   var sessionId = obtenerSessionId();
   var cola = [];
   var MAX_COLA = 50;
@@ -153,6 +168,28 @@
     },
   });
 
+  setTimeout(function () {
+    var title = (document.title || "").toLowerCase();
+    var bodyText = (document.body ? document.body.innerText || "" : "").toLowerCase();
+    if (
+      title.indexOf("404") > -1 ||
+      title.indexOf("no encontrada") > -1 ||
+      title.indexOf("not found") > -1 ||
+      bodyText.indexOf("404 -") > -1 ||
+      bodyText.indexOf("página no encontrada") > -1 ||
+      bodyText.indexOf("this page could not be found") > -1
+    ) {
+      agregarEvento({
+        type: "custom",
+        url: location.pathname + location.search,
+        metadata: {
+          eventName: "error_404",
+          brokenUrl: location.pathname + location.search,
+        },
+      });
+    }
+  }, 1200);
+
   document.addEventListener("click", function (evento) {
     var target = evento.target;
     var pulseEl = target && target.closest ? target.closest("[data-pulse-event]") : null;
@@ -161,6 +198,23 @@
       if (evtName) {
         window.iasmPulse.track(evtName);
       }
+    }
+
+    var anchor = target && target.closest ? target.closest("a") : null;
+    if (anchor && esEnlaceSaliente(anchor)) {
+      var href = anchor.href;
+      var host = "";
+      try { host = new URL(href).hostname; } catch {}
+      agregarEvento({
+        type: "custom",
+        url: location.pathname + location.search,
+        metadata: {
+          eventName: "outbound_link",
+          targetUrl: href,
+          targetHost: host,
+          text: (anchor.innerText || "").trim().slice(0, 50),
+        },
+      });
     }
 
     agregarEvento({
