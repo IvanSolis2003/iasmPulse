@@ -3,11 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { verdeClaro, verdeOscuro } from "@/theme";
+import Chip from "@mui/material/Chip";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
+import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
+import MainCard from "@/components/MainCard";
+import { verde, verdeClaro, verdeOscuro, verdePastel, grisBorde } from "@/theme";
 
 type Pagina = { url: string; count: number };
 type Punto = { x: number; y: number };
@@ -106,45 +110,61 @@ export default function HeatmapSitio({ siteId }: { siteId: string }) {
 
   if (paginas.length === 0) {
     return (
-      <Typography variant="body2" sx={{ mt: 3, opacity: 0.5 }}>
-        Todavía no hay clicks registrados para este sitio.
-      </Typography>
+      <MainCard>
+        <Box sx={{ py: 6, textAlign: "center" }}>
+          <TouchAppOutlinedIcon sx={{ fontSize: 48, color: "text.secondary", opacity: 0.4, mb: 1 }} />
+          <Typography variant="h3" sx={{ color: "text.primary", mb: 0.5 }}>
+            Sin clics registrados
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            Todavía no se han recopilado puntos de interacción en este sitio.
+          </Typography>
+        </Box>
+      </MainCard>
     );
   }
 
   return (
-    <Stack spacing={2} sx={{ mt: 3 }}>
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{ alignItems: { xs: "stretch", sm: "center" } }}
-      >
-        <Select
+    <MainCard
+      title="Mapa de Densidad de Clics"
+      secondary={
+        <Chip
+          label={`${total} clics registrados`}
           size="small"
-          value={urlSeleccionada}
-          onChange={(e) => setUrlSeleccionada(e.target.value)}
-          sx={{ minWidth: { sm: 240 }, width: { xs: "100%", sm: "auto" } }}
-        >
-          {paginas.map((pagina) => (
-            <MenuItem key={pagina.url} value={pagina.url}>
-              {pagina.url} ({pagina.count})
-            </MenuItem>
-          ))}
-        </Select>
-        <Typography variant="body2" sx={{ opacity: 0.6 }}>
-          {total} clicks
-        </Typography>
-      </Stack>
+          sx={{
+            backgroundColor: verdePastel,
+            color: verdeOscuro,
+            fontWeight: 700,
+          }}
+        />
+      }
+    >
+      <Stack spacing={3}>
+        <FormControl size="small" sx={{ maxWidth: { xs: "100%", sm: 360 } }}>
+          <InputLabel id="select-pagina-label">Seleccionar Página</InputLabel>
+          <Select
+            labelId="select-pagina-label"
+            label="Seleccionar Página"
+            value={urlSeleccionada}
+            onChange={(e) => setUrlSeleccionada(e.target.value)}
+          >
+            {paginas.map((pagina) => (
+              <MenuItem key={pagina.url} value={pagina.url}>
+                {pagina.url} ({pagina.count} clics)
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-      <Paper sx={{ p: 2 }}>
         <Box
           sx={{
             position: "relative",
             width: "100%",
             aspectRatio: `${ANCHO_CANVAS} / ${ALTO_CANVAS}`,
-            backgroundColor: "#F5F5F5",
-            border: 1,
-            borderColor: "divider",
+            backgroundColor: "#F1F5F9",
+            borderRadius: 2.5,
+            border: `1px solid ${grisBorde}`,
+            overflow: "hidden",
           }}
         >
           <canvas
@@ -154,7 +174,14 @@ export default function HeatmapSitio({ siteId }: { siteId: string }) {
             style={{ width: "100%", height: "100%", display: "block" }}
           />
         </Box>
-      </Paper>
-    </Stack>
+
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <Box sx={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: verde }} />
+          <Typography variant="caption" sx={{ color: "text.secondary" }}>
+            Las zonas con mayor concentración de clics se representan en tonos verdes más intensos.
+          </Typography>
+        </Stack>
+      </Stack>
+    </MainCard>
   );
 }

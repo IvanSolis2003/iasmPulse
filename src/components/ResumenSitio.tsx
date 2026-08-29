@@ -3,13 +3,19 @@
 import { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import Paper from "@mui/material/Paper";
+import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
+import CircularProgress from "@mui/material/CircularProgress";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import FingerprintOutlinedIcon from "@mui/icons-material/FingerprintOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
-import { verde } from "@/theme";
+import MainCard from "@/components/MainCard";
+import KpiCard from "@/components/KpiCard";
+import { verde, verdePastel, verdeOscuro, grisBorde } from "@/theme";
 
 type Metricas = {
   totalVisitas: number;
@@ -25,42 +31,30 @@ const RANGOS = [
   { valor: "90d", etiqueta: "90 días" },
 ];
 
-function StatTile({ label, value }: { label: string; value: number }) {
-  return (
-    <Paper sx={{ p: 2.5, flex: 1 }}>
-      <Typography variant="caption" sx={{ textTransform: "uppercase", opacity: 0.5 }}>
-        {label}
-      </Typography>
-      <Typography sx={{ fontSize: "2rem", fontWeight: 600 }}>
-        {value.toLocaleString("es-CL")}
-      </Typography>
-    </Paper>
-  );
-}
-
 function BarraRanking({ titulo, datos }: { titulo: string; datos: { nombre: string; visitas: number }[] }) {
   return (
-    <Paper sx={{ p: 2.5, flex: 1, minWidth: 0 }}>
-      <Typography variant="h3" sx={{ mb: 1.5 }}>
-        {titulo}
-      </Typography>
+    <MainCard title={titulo} sx={{ height: "100%" }}>
       {datos.length === 0 ? (
-        <Typography variant="body2" sx={{ opacity: 0.5 }}>
-          Sin datos en este rango
-        </Typography>
+        <Box sx={{ py: 3, textAlign: "center" }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            Sin datos registrados en este rango
+          </Typography>
+        </Box>
       ) : (
-        <BarChart
-          layout="horizontal"
-          height={Math.max(datos.length * 32, 80)}
-          dataset={datos}
-          yAxis={[{ dataKey: "nombre", label: undefined }]}
-          xAxis={[{ label: undefined }]}
-          series={[{ dataKey: "visitas", color: verde, label: "Visitas" }]}
-          margin={{ left: 110 }}
-          hideLegend
-        />
+        <Box sx={{ width: "100%", overflowX: "auto" }}>
+          <BarChart
+            layout="horizontal"
+            height={Math.max(datos.length * 36, 120)}
+            dataset={datos}
+            yAxis={[{ dataKey: "nombre", scaleType: "band", tickLabelStyle: { fontSize: 11 } }]}
+            xAxis={[{ tickLabelStyle: { fontSize: 11 } }]}
+            series={[{ dataKey: "visitas", color: verde, label: "Visitas" }]}
+            margin={{ left: 120, right: 20, top: 10, bottom: 20 }}
+            hideLegend
+          />
+        </Box>
       )}
-    </Paper>
+    </MainCard>
   );
 }
 
@@ -87,51 +81,118 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
   }, [siteId, rango]);
 
   return (
-    <Stack spacing={3} sx={{ mt: 3 }}>
-      <ToggleButtonGroup
-        value={rango}
-        exclusive
-        size="small"
-        onChange={(_e, valor) => {
-          if (valor) {
-            setCargando(true);
-            setRango(valor);
-          }
+    <Stack spacing={3}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "space-between",
         }}
       >
-        {RANGOS.map((r) => (
-          <ToggleButton key={r.valor} value={r.valor} sx={{ borderRadius: 0 }}>
-            {r.etiqueta}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+          <CalendarMonthOutlinedIcon fontSize="small" sx={{ color: "text.secondary" }} />
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
+            Rango de tiempo:
+          </Typography>
+        </Stack>
 
-      <Box sx={{ opacity: cargando ? 0.5 : 1, transition: "opacity 0.15s ease" }}>
-        {metricas && (
+        <ToggleButtonGroup
+          value={rango}
+          exclusive
+          size="small"
+          onChange={(_e, valor) => {
+            if (valor) {
+              setCargando(true);
+              setRango(valor);
+            }
+          }}
+          sx={{
+            backgroundColor: "#FFFFFF",
+            border: `1px solid ${grisBorde}`,
+            borderRadius: 2.5,
+            p: 0.25,
+            "& .MuiToggleButton-root": {
+              border: "none",
+              borderRadius: 2,
+              px: 1.75,
+              py: 0.5,
+              fontSize: "0.8125rem",
+              fontWeight: 600,
+              color: "text.secondary",
+              "&.Mui-selected": {
+                backgroundColor: verdePastel,
+                color: verdeOscuro,
+              },
+            },
+          }}
+        >
+          {RANGOS.map((r) => (
+            <ToggleButton key={r.valor} value={r.valor}>
+              {r.etiqueta}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </Stack>
+
+      <Box sx={{ opacity: cargando ? 0.6 : 1, transition: "opacity 0.2s ease" }}>
+        {metricas ? (
           <Stack spacing={3}>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <StatTile label="Visitas totales" value={metricas.totalVisitas} />
-              <StatTile label="Sesiones únicas" value={metricas.sesionesUnicas} />
-            </Stack>
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <KpiCard
+                  variant="dark"
+                  icon={<VisibilityOutlinedIcon />}
+                  label="Visitas Totales"
+                  value={metricas.totalVisitas}
+                  sublabel="Pageviews en el período seleccionado"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <KpiCard
+                  variant="light"
+                  icon={<FingerprintOutlinedIcon />}
+                  label="Sesiones Únicas"
+                  value={metricas.sesionesUnicas}
+                  sublabel="Visitantes únicos contabilizados"
+                />
+              </Grid>
+            </Grid>
 
-            <Paper sx={{ p: 2.5 }}>
-              <Typography variant="h3" sx={{ mb: 1.5 }}>
-                Visitas por día
-              </Typography>
-              <LineChart
-                height={260}
-                dataset={metricas.porDia}
-                xAxis={[{ dataKey: "fecha", scaleType: "point" }]}
-                series={[{ dataKey: "visitas", color: verde, showMark: true }]}
-                hideLegend
-              />
-            </Paper>
+            <MainCard title="Tendencia de Visitas por Día">
+              <Box sx={{ width: "100%", overflowX: "auto", minWidth: 0 }}>
+                <LineChart
+                  height={280}
+                  dataset={metricas.porDia}
+                  xAxis={[{ dataKey: "fecha", scaleType: "point", tickLabelStyle: { fontSize: 11 } }]}
+                  series={[
+                    {
+                      dataKey: "visitas",
+                      color: verde,
+                      showMark: true,
+                      area: true,
+                      baseline: "min",
+                    },
+                  ]}
+                  margin={{ left: 40, right: 20, top: 20, bottom: 30 }}
+                  hideLegend
+                />
+              </Box>
+            </MainCard>
 
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-              <BarraRanking titulo="Top páginas" datos={metricas.topPaginas} />
-              <BarraRanking titulo="Top referrers" datos={metricas.topReferrers} />
-            </Stack>
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <BarraRanking titulo="Top Páginas más Visitadas" datos={metricas.topPaginas} />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <BarraRanking titulo="Top Fuentes de Tráfico (Referrers)" datos={metricas.topReferrers} />
+              </Grid>
+            </Grid>
           </Stack>
+        ) : (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress color="primary" />
+          </Box>
         )}
       </Box>
     </Stack>
