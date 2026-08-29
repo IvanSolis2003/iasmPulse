@@ -262,6 +262,60 @@
     }
   }
 
+  var lcpValor = 0;
+  var clsValor = 0;
+
+  if (typeof window !== "undefined" && window.PerformanceObserver) {
+    try {
+      var lcpObserver = new PerformanceObserver(function (entryList) {
+        var entries = entryList.getEntries();
+        var last = entries[entries.length - 1];
+        if (last) {
+          lcpValor = Math.round(last.startTime);
+        }
+      });
+      lcpObserver.observe({ type: "largest-contentful-paint", buffered: true });
+    } catch {
+      // Ignorar si no está soportado
+    }
+
+    try {
+      var clsObserver = new PerformanceObserver(function (entryList) {
+        var entries = entryList.getEntries();
+        for (var i = 0; i < entries.length; i++) {
+          if (!entries[i].hadRecentInput) {
+            clsValor += entries[i].value;
+          }
+        }
+      });
+      clsObserver.observe({ type: "layout-shift", buffered: true });
+    } catch {
+      // Ignorar si no está soportado
+    }
+  }
+
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      var perf = window.performance && window.performance.timing;
+      var ttfb = perf ? perf.responseStart - perf.requestStart : 0;
+      var domReady = perf ? perf.domContentLoadedEventEnd - perf.navigationStart : 0;
+
+      if (lcpValor > 0 || ttfb > 0) {
+        agregarEvento({
+          type: "custom",
+          url: location.pathname + location.search,
+          metadata: {
+            eventName: "web_vitals",
+            lcp: lcpValor,
+            cls: Math.round(clsValor * 100) / 100,
+            ttfb: ttfb > 0 && ttfb < 30000 ? ttfb : 0,
+            domReady: domReady > 0 && domReady < 60000 ? domReady : 0,
+          },
+        });
+      }
+    }, 2000);
+  });
+
   document.addEventListener("click", function (evento) {
     detectarRageClick(evento.clientX, evento.clientY);
 

@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -24,6 +25,7 @@ import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
+import SpeedOutlinedIcon from "@mui/icons-material/SpeedOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import MainCard from "@/components/MainCard";
@@ -34,6 +36,17 @@ type ItemRanking = {
   nombre: string;
   visitas: number;
   porcentaje?: number;
+};
+
+type WebVitalsData = {
+  avgLcp: number;
+  avgCls: number;
+  avgTtfb: number;
+  avgLoadTime: number;
+  lcpStatus: "good" | "needs-improvement" | "poor" | "none";
+  clsStatus: "good" | "needs-improvement" | "poor" | "none";
+  ttfbStatus: "good" | "needs-improvement" | "poor" | "none";
+  totalMuestras: number;
 };
 
 type Metricas = {
@@ -52,6 +65,7 @@ type Metricas = {
   enlacesSalientes?: ItemRanking[];
   paginas404?: ItemRanking[];
   scrollDepth?: ItemRanking[];
+  webVitals?: WebVitalsData;
 };
 
 const RANGOS = [
@@ -157,6 +171,120 @@ function TarjetaDistribucion({
           })}
         </Stack>
       )}
+    </MainCard>
+  );
+}
+
+function TarjetaWebVitals({ vitals }: { vitals?: WebVitalsData }) {
+  const getBadge = (status: string, labelBuen: string) => {
+    if (status === "good") {
+      return (
+        <Chip
+          label={labelBuen}
+          size="small"
+          sx={{ backgroundColor: verdePastel, color: verdeOscuro, fontWeight: 700, fontSize: "0.75rem" }}
+        />
+      );
+    }
+    if (status === "needs-improvement") {
+      return (
+        <Chip
+          label="Mejorable"
+          size="small"
+          sx={{ backgroundColor: "#FEF3C7", color: "#D97706", fontWeight: 700, fontSize: "0.75rem" }}
+        />
+      );
+    }
+    if (status === "poor") {
+      return (
+        <Chip
+          label="Lento"
+          size="small"
+          sx={{ backgroundColor: "#FEE2E2", color: "#DC2626", fontWeight: 700, fontSize: "0.75rem" }}
+        />
+      );
+    }
+    return (
+      <Chip
+        label="Pendiente"
+        size="small"
+        sx={{ backgroundColor: "#F1F5F9", color: "text.secondary", fontWeight: 600, fontSize: "0.75rem" }}
+      />
+    );
+  };
+
+  return (
+    <MainCard
+      title={
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
+          <SpeedOutlinedIcon sx={{ color: verde }} />
+          <Typography variant="h3" sx={{ fontWeight: 600 }}>
+            Rendimiento Web Real (Core Web Vitals)
+          </Typography>
+        </Stack>
+      }
+      secondary={
+        vitals && vitals.totalMuestras > 0 ? (
+          <Chip
+            label={`${vitals.totalMuestras} mediciones`}
+            size="small"
+            sx={{ backgroundColor: "#F1F5F9", color: "text.secondary", fontWeight: 600 }}
+          />
+        ) : undefined
+      }
+    >
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <Box sx={{ p: 2, borderRadius: 2, border: `1px solid ${grisBorde}`, backgroundColor: "#FAFAFA" }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
+                LCP (Render Visual)
+              </Typography>
+              {getBadge(vitals?.lcpStatus ?? "none", "🟢 Rápido")}
+            </Stack>
+            <Typography variant="h3" sx={{ fontWeight: 700, color: "text.primary" }}>
+              {vitals && vitals.avgLcp > 0 ? `${(vitals.avgLcp / 1000).toFixed(2)}s` : "En espera"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              Meta recomendada: &lt; 2.5s
+            </Typography>
+          </Box>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <Box sx={{ p: 2, borderRadius: 2, border: `1px solid ${grisBorde}`, backgroundColor: "#FAFAFA" }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
+                CLS (Estabilidad)
+              </Typography>
+              {getBadge(vitals?.clsStatus ?? "none", "🟢 Estable")}
+            </Stack>
+            <Typography variant="h3" sx={{ fontWeight: 700, color: "text.primary" }}>
+              {vitals && vitals.avgCls >= 0 ? vitals.avgCls : "En espera"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              Meta recomendada: &lt; 0.1
+            </Typography>
+          </Box>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <Box sx={{ p: 2, borderRadius: 2, border: `1px solid ${grisBorde}`, backgroundColor: "#FAFAFA" }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
+                TTFB (Respuesta Servidor)
+              </Typography>
+              {getBadge(vitals?.ttfbStatus ?? "none", "🟢 Óptimo")}
+            </Stack>
+            <Typography variant="h3" sx={{ fontWeight: 700, color: "text.primary" }}>
+              {vitals && vitals.avgTtfb > 0 ? `${vitals.avgTtfb} ms` : "En espera"}
+            </Typography>
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              Meta recomendada: &lt; 800ms
+            </Typography>
+          </Box>
+        </Grid>
+      </Grid>
     </MainCard>
   );
 }
@@ -300,6 +428,8 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
                 />
               </Box>
             </MainCard>
+
+            <TarjetaWebVitals vitals={metricas.webVitals} />
 
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
