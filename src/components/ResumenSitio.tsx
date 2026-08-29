@@ -20,6 +20,8 @@ import TabletMacOutlinedIcon from "@mui/icons-material/TabletMacOutlined";
 import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
 import TrackChangesOutlinedIcon from "@mui/icons-material/TrackChangesOutlined";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
+import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
+import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import MainCard from "@/components/MainCard";
@@ -44,6 +46,8 @@ type Metricas = {
   paises?: ItemRanking[];
   campanas?: ItemRanking[];
   eventosPersonalizados?: ItemRanking[];
+  enlacesSalientes?: ItemRanking[];
+  paginas404?: ItemRanking[];
 };
 
 const RANGOS = [
@@ -121,13 +125,13 @@ function TarjetaDistribucion({
             return (
               <Box key={item.nombre}>
                 <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-                  <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: "center", minWidth: 0 }}>
                     {iconNode}
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {item.nombre}
                     </Typography>
                   </Stack>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary", flexShrink: 0, ml: 1 }}>
                     {item.visitas.toLocaleString("es-CL")} ({item.porcentaje ?? 0}%)
                   </Typography>
                 </Stack>
@@ -325,6 +329,25 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
                   icono={<CampaignOutlinedIcon sx={{ color: verdeOscuro }} />}
                   datos={metricas.campanas}
                   emptyText="Sin campañas UTM detectadas en este rango"
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
+                  titulo="Enlaces Salientes (WhatsApp / Redes)"
+                  icono={<OpenInNewOutlinedIcon sx={{ color: verde }} />}
+                  datos={metricas.enlacesSalientes}
+                  emptyText="Sin clics en enlaces salientes en este rango"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
+                  titulo="Páginas 404 Detectadas"
+                  icono={<ReportProblemOutlinedIcon sx={{ color: "#EF4444" }} />}
+                  datos={metricas.paginas404}
+                  emptyText="No se detectaron errores 404 (Todo en orden)"
                 />
               </Grid>
             </Grid>

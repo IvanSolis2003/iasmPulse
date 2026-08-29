@@ -61,6 +61,8 @@ export async function GET(
   const osMapa = new Map<string, number>();
   const campanasMapa = new Map<string, number>();
   const customEventsMapa = new Map<string, number>();
+  const outboundMapa = new Map<string, number>();
+  const paginas404Mapa = new Map<string, number>();
   const paisesMapa = new Map<string, number>();
   const sesiones = new Set<string>();
 
@@ -102,7 +104,16 @@ export async function GET(
     if (c.metadata && typeof c.metadata === "object") {
       const meta = c.metadata as Record<string, unknown>;
       const evtName = typeof meta.eventName === "string" ? meta.eventName : "Acción personalizada";
-      customEventsMapa.set(evtName, (customEventsMapa.get(evtName) ?? 0) + 1);
+
+      if (evtName === "outbound_link") {
+        const target = (typeof meta.targetUrl === "string" ? meta.targetUrl : "") || (typeof meta.targetHost === "string" ? meta.targetHost : "Enlace externo");
+        outboundMapa.set(target, (outboundMapa.get(target) ?? 0) + 1);
+      } else if (evtName === "error_404") {
+        const brokenUrl = typeof meta.brokenUrl === "string" ? meta.brokenUrl : c.url;
+        paginas404Mapa.set(brokenUrl, (paginas404Mapa.get(brokenUrl) ?? 0) + 1);
+      } else {
+        customEventsMapa.set(evtName, (customEventsMapa.get(evtName) ?? 0) + 1);
+      }
     } else {
       customEventsMapa.set("Acción personalizada", (customEventsMapa.get("Acción personalizada") ?? 0) + 1);
     }
@@ -133,5 +144,7 @@ export async function GET(
     paises: topN(paisesMapa, 8),
     campanas: topN(campanasMapa, 8),
     eventosPersonalizados: topN(customEventsMapa, 10),
+    enlacesSalientes: topN(outboundMapa, 8),
+    paginas404: topN(paginas404Mapa, 8),
   });
 }
