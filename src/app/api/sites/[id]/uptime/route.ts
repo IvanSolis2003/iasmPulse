@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+const IP_PRIVADA_REGEX =
+  /^(localhost|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+|169\.254\.\d+\.\d+|0\.0\.0\.0|::1)$/i;
+
+function esDominioSeguro(dominio: string): boolean {
+  if (!dominio || dominio.length > 253) return false;
+  if (IP_PRIVADA_REGEX.test(dominio)) return false;
+  return /^[a-zA-Z0-9][a-zA-Z0-9-._]+[a-zA-Z0-9]$/.test(dominio);
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -13,6 +22,22 @@ export async function GET(
   }
 
   const cleanDomain = site.domain.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+
+  if (!esDominioSeguro(cleanDomain)) {
+    return NextResponse.json(
+      {
+        online: false,
+        statusCode: 400,
+        latencyMs: null,
+        error: "Dominio no válido o restringido",
+        lastChecked: new Date().toISOString(),
+        domain: site.domain,
+        targetUrl: `https://${cleanDomain}`,
+      },
+      { status: 400 },
+    );
+  }
+
   const targetUrl = `https://${cleanDomain}`;
 
   const inicio = performance.now();
@@ -43,7 +68,7 @@ export async function GET(
       errorMsg = "Tiempo de espera agotado (Timeout > 8s)";
     } else {
       statusCode = 500;
-      errorMsg = error instanceof Error ? error.message : "Error al conectar con el servidor";
+      errorMsg = "No se pudo establecer conexión segura con el servidor";
     }
   }
 
@@ -57,4 +82,3 @@ export async function GET(
     targetUrl,
   });
 }
-
