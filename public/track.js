@@ -27,6 +27,39 @@
     }
   }
 
+  function detectarDispositivo() {
+    var ua = navigator.userAgent || "";
+    var width = window.innerWidth || 0;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua) || (width >= 768 && width <= 1024)) {
+      return "Tablet";
+    }
+    if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua) || width < 768) {
+      return "Móvil";
+    }
+    return "Desktop";
+  }
+
+  function detectarNavegador() {
+    var ua = navigator.userAgent || "";
+    if (ua.indexOf("Firefox") > -1) return "Firefox";
+    if (ua.indexOf("SamsungBrowser") > -1) return "Samsung Browser";
+    if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) return "Opera";
+    if (ua.indexOf("Edge") > -1 || ua.indexOf("Edg") > -1) return "Edge";
+    if (ua.indexOf("Chrome") > -1) return "Chrome";
+    if (ua.indexOf("Safari") > -1) return "Safari";
+    return "Otro";
+  }
+
+  function detectarOS() {
+    var ua = navigator.userAgent || "";
+    if (ua.indexOf("Win") > -1) return "Windows";
+    if (ua.indexOf("Mac") > -1 && ua.indexOf("iPhone") === -1 && ua.indexOf("iPad") === -1) return "macOS";
+    if (ua.indexOf("Android") > -1) return "Android";
+    if (ua.indexOf("iPhone") > -1 || ua.indexOf("iPad") > -1 || ua.indexOf("iPod") > -1) return "iOS";
+    if (ua.indexOf("Linux") > -1) return "Linux";
+    return "Otro";
+  }
+
   var sessionId = obtenerSessionId();
   var cola = [];
   var MAX_COLA = 50;
@@ -72,6 +105,13 @@
     type: "pageview",
     url: location.pathname + location.search,
     referrer: document.referrer || undefined,
+    metadata: {
+      device: detectarDispositivo(),
+      browser: detectarNavegador(),
+      os: detectarOS(),
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+    },
   });
 
   document.addEventListener("click", function (evento) {

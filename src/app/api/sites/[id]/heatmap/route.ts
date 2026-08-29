@@ -13,22 +13,31 @@ export async function GET(
   }
 
   const url = request.nextUrl.searchParams.get("url");
+  const device = request.nextUrl.searchParams.get("device") || "all";
+
+  const deviceFilter =
+    device === "mobile"
+      ? { viewportWidth: { lt: 768 } }
+      : device === "desktop"
+      ? { viewportWidth: { gte: 768 } }
+      : {};
 
   if (!url) {
     const agrupado = await prisma.clickEvent.groupBy({
       by: ["url"],
-      where: { siteId: id },
+      where: { siteId: id, ...deviceFilter },
       _count: { _all: true },
       orderBy: { _count: { url: "desc" } },
     });
 
     return NextResponse.json({
       pages: agrupado.map((g) => ({ url: g.url, count: g._count._all })),
+      device,
     });
   }
 
   const clicks = await prisma.clickEvent.findMany({
-    where: { siteId: id, url },
+    where: { siteId: id, url, ...deviceFilter },
     select: { x: true, y: true },
   });
 
@@ -36,5 +45,6 @@ export async function GET(
     url,
     total: clicks.length,
     points: clicks,
+    device,
   });
 }

@@ -8,21 +8,35 @@ import Typography from "@mui/material/Typography";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
 import CircularProgress from "@mui/material/CircularProgress";
+import LinearProgress from "@mui/material/LinearProgress";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import FingerprintOutlinedIcon from "@mui/icons-material/FingerprintOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import DevicesOutlinedIcon from "@mui/icons-material/DevicesOutlined";
+import WebAssetOutlinedIcon from "@mui/icons-material/WebAssetOutlined";
+import SmartphoneOutlinedIcon from "@mui/icons-material/SmartphoneOutlined";
+import ComputerOutlinedIcon from "@mui/icons-material/ComputerOutlined";
+import TabletMacOutlinedIcon from "@mui/icons-material/TabletMacOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import MainCard from "@/components/MainCard";
 import KpiCard from "@/components/KpiCard";
 import { verde, verdePastel, verdeOscuro, grisBorde } from "@/theme";
 
+type ItemRanking = {
+  nombre: string;
+  visitas: number;
+  porcentaje?: number;
+};
+
 type Metricas = {
   totalVisitas: number;
   sesionesUnicas: number;
   porDia: { fecha: string; visitas: number }[];
-  topPaginas: { nombre: string; visitas: number }[];
-  topReferrers: { nombre: string; visitas: number }[];
+  topPaginas: ItemRanking[];
+  topReferrers: ItemRanking[];
+  dispositivos?: ItemRanking[];
+  navegadores?: ItemRanking[];
 };
 
 const RANGOS = [
@@ -31,7 +45,7 @@ const RANGOS = [
   { valor: "90d", etiqueta: "90 días" },
 ];
 
-function BarraRanking({ titulo, datos }: { titulo: string; datos: { nombre: string; visitas: number }[] }) {
+function BarraRanking({ titulo, datos }: { titulo: string; datos: ItemRanking[] }) {
   return (
     <MainCard title={titulo} sx={{ height: "100%" }}>
       {datos.length === 0 ? (
@@ -53,6 +67,76 @@ function BarraRanking({ titulo, datos }: { titulo: string; datos: { nombre: stri
             hideLegend
           />
         </Box>
+      )}
+    </MainCard>
+  );
+}
+
+function TarjetaDistribucion({
+  titulo,
+  icono,
+  datos,
+}: {
+  titulo: string;
+  icono: React.ReactNode;
+  datos?: ItemRanking[];
+}) {
+  return (
+    <MainCard
+      title={
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
+          {icono}
+          <Typography variant="h3" sx={{ fontWeight: 600 }}>
+            {titulo}
+          </Typography>
+        </Stack>
+      }
+      sx={{ height: "100%" }}
+    >
+      {!datos || datos.length === 0 ? (
+        <Typography variant="body2" sx={{ py: 3, textAlign: "center", color: "text.secondary" }}>
+          Sin datos suficientes
+        </Typography>
+      ) : (
+        <Stack spacing={2}>
+          {datos.map((item) => {
+            const getIcon = () => {
+              if (item.nombre === "Desktop") return <ComputerOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
+              if (item.nombre === "Móvil") return <SmartphoneOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
+              if (item.nombre === "Tablet") return <TabletMacOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
+              return <WebAssetOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />;
+            };
+
+            return (
+              <Box key={item.nombre}>
+                <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                    {getIcon()}
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {item.nombre}
+                    </Typography>
+                  </Stack>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: "text.secondary" }}>
+                    {item.visitas.toLocaleString("es-CL")} ({item.porcentaje ?? 0}%)
+                  </Typography>
+                </Stack>
+                <LinearProgress
+                  variant="determinate"
+                  value={item.porcentaje ?? 0}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: "rgba(0,0,0,0.06)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: verde,
+                      borderRadius: 4,
+                    },
+                  }}
+                />
+              </Box>
+            );
+          })}
+        </Stack>
       )}
     </MainCard>
   );
@@ -186,6 +270,23 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <BarraRanking titulo="Top Fuentes de Tráfico (Referrers)" datos={metricas.topReferrers} />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
+                  titulo="Dispositivos de Acceso"
+                  icono={<DevicesOutlinedIcon sx={{ color: verde }} />}
+                  datos={metricas.dispositivos}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
+                  titulo="Navegadores Web"
+                  icono={<WebAssetOutlinedIcon sx={{ color: verdeOscuro }} />}
+                  datos={metricas.navegadores}
+                />
               </Grid>
             </Grid>
           </Stack>
