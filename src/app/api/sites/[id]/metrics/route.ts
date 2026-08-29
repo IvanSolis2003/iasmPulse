@@ -63,6 +63,13 @@ export async function GET(
   const customEventsMapa = new Map<string, number>();
   const outboundMapa = new Map<string, number>();
   const paginas404Mapa = new Map<string, number>();
+  const scrollDepthMapa = new Map<string, number>([
+    ["25% de la página", 0],
+    ["50% de la página", 0],
+    ["75% de la página", 0],
+    ["100% (final)", 0],
+  ]);
+  let rageClicksCount = 0;
   const paisesMapa = new Map<string, number>();
   const sesiones = new Set<string>();
 
@@ -111,6 +118,14 @@ export async function GET(
       } else if (evtName === "error_404") {
         const brokenUrl = typeof meta.brokenUrl === "string" ? meta.brokenUrl : c.url;
         paginas404Mapa.set(brokenUrl, (paginas404Mapa.get(brokenUrl) ?? 0) + 1);
+      } else if (evtName === "scroll_depth") {
+        const depth = typeof meta.depth === "string" ? meta.depth : "";
+        if (depth === "25%") scrollDepthMapa.set("25% de la página", (scrollDepthMapa.get("25% de la página") ?? 0) + 1);
+        if (depth === "50%") scrollDepthMapa.set("50% de la página", (scrollDepthMapa.get("50% de la página") ?? 0) + 1);
+        if (depth === "75%") scrollDepthMapa.set("75% de la página", (scrollDepthMapa.get("75% de la página") ?? 0) + 1);
+        if (depth === "100%") scrollDepthMapa.set("100% (final)", (scrollDepthMapa.get("100% (final)") ?? 0) + 1);
+      } else if (evtName === "rage_click") {
+        rageClicksCount += 1;
       } else {
         customEventsMapa.set(evtName, (customEventsMapa.get(evtName) ?? 0) + 1);
       }
@@ -131,10 +146,18 @@ export async function GET(
       }));
   }
 
+  const scrollTotal = pageviews.length;
+  const scrollDepthList = Array.from(scrollDepthMapa.entries()).map(([nombre, cantidad]) => ({
+    nombre,
+    visitas: cantidad,
+    porcentaje: scrollTotal > 0 ? Math.min(Math.round((cantidad / scrollTotal) * 100), 100) : 0,
+  }));
+
   return NextResponse.json({
     totalVisitas: pageviews.length,
     sesionesUnicas: sesiones.size,
     totalConversiones: eventosCustom.length,
+    rageClicks: rageClicksCount,
     porDia: Array.from(porDiaMapa.entries()).map(([fecha, visitas]) => ({ fecha, visitas })),
     topPaginas: topN(paginasMapa, 10),
     topReferrers: topN(referrersMapa, 10),
@@ -146,5 +169,6 @@ export async function GET(
     eventosPersonalizados: topN(customEventsMapa, 10),
     enlacesSalientes: topN(outboundMapa, 8),
     paginas404: topN(paginas404Mapa, 8),
+    scrollDepth: scrollDepthList,
   });
 }
