@@ -6,14 +6,16 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import HealthAndSafetyOutlinedIcon from "@mui/icons-material/HealthAndSafetyOutlined";
 import ResumenSitio from "@/components/ResumenSitio";
 import HeatmapSitio from "@/components/HeatmapSitio";
+import FunnelViewer from "@/components/FunnelViewer";
 import UptimeStatusCard from "@/components/UptimeStatusCard";
 import { grisBorde } from "@/theme";
 
 export default function SiteTabs({ siteId }: { siteId: string }) {
-  const [vista, setVista] = useState<"resumen" | "heatmap" | "uptime">("resumen");
+  const [vista, setVista] = useState<"resumen" | "heatmap" | "funnels" | "uptime">("resumen");
 
   return (
     <Box>
@@ -40,6 +42,13 @@ export default function SiteTabs({ siteId }: { siteId: string }) {
             sx={{ minHeight: 48, px: 2.5 }}
           />
           <Tab
+            icon={<FilterAltOutlinedIcon fontSize="small" />}
+            iconPosition="start"
+            label="Embudos (Funnels)"
+            value="funnels"
+            sx={{ minHeight: 48, px: 2.5 }}
+          />
+          <Tab
             icon={<HealthAndSafetyOutlinedIcon fontSize="small" />}
             iconPosition="start"
             label="Disponibilidad (Uptime)"
@@ -51,6 +60,7 @@ export default function SiteTabs({ siteId }: { siteId: string }) {
 
       {vista === "resumen" && <ResumenSitio siteId={siteId} />}
       {vista === "heatmap" && <HeatmapSitio siteId={siteId} />}
+      {vista === "funnels" && <FunnelViewer siteId={siteId} />}
       {vista === "uptime" && <UptimeStatusCard siteId={siteId} />}
     </Box>
   );
