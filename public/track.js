@@ -190,7 +190,81 @@
     }
   }, 1200);
 
+  var hitosScroll = { 25: false, 50: false, 75: false, 100: false };
+  var scrollTimeout;
+
+  function verificarScroll() {
+    var docHeight = Math.max(
+      document.body ? document.body.scrollHeight : 0,
+      document.documentElement.scrollHeight,
+      document.body ? document.body.offsetHeight : 0,
+      document.documentElement.offsetHeight
+    );
+    var winHeight = window.innerHeight || 1;
+    var maxScroll = docHeight - winHeight;
+    if (maxScroll <= 10) return;
+
+    var actual = window.scrollY || window.pageYOffset || 0;
+    var porcentaje = Math.min(Math.round((actual / maxScroll) * 100), 100);
+
+    [25, 50, 75, 100].forEach(function (hito) {
+      if (porcentaje >= hito && !hitosScroll[hito]) {
+        hitosScroll[hito] = true;
+        agregarEvento({
+          type: "custom",
+          url: location.pathname + location.search,
+          metadata: {
+            eventName: "scroll_depth",
+            depth: hito + "%",
+          },
+        });
+      }
+    });
+  }
+
+  window.addEventListener("scroll", function () {
+    if (!scrollTimeout) {
+      scrollTimeout = setTimeout(function () {
+        scrollTimeout = null;
+        verificarScroll();
+      }, 350);
+    }
+  }, { passive: true });
+
+  var ultimosClicks = [];
+  function detectarRageClick(x, y) {
+    var ahora = Date.now();
+    ultimosClicks.push({ x: x, y: y, tiempo: ahora });
+    ultimosClicks = ultimosClicks.filter(function (c) {
+      return ahora - c.tiempo < 900;
+    });
+
+    if (ultimosClicks.length >= 3) {
+      var primerClick = ultimosClicks[0];
+      var todosCerca = ultimosClicks.every(function (c) {
+        var dx = c.x - primerClick.x;
+        var dy = c.y - primerClick.y;
+        return Math.sqrt(dx * dx + dy * dy) < 35;
+      });
+
+      if (todosCerca) {
+        ultimosClicks = [];
+        agregarEvento({
+          type: "custom",
+          url: location.pathname + location.search,
+          metadata: {
+            eventName: "rage_click",
+            x: x / window.innerWidth,
+            y: y / window.innerHeight,
+          },
+        });
+      }
+    }
+  }
+
   document.addEventListener("click", function (evento) {
+    detectarRageClick(evento.clientX, evento.clientY);
+
     var target = evento.target;
     var pulseEl = target && target.closest ? target.closest("[data-pulse-event]") : null;
     if (pulseEl) {

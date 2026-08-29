@@ -22,6 +22,8 @@ import TrackChangesOutlinedIcon from "@mui/icons-material/TrackChangesOutlined";
 import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
+import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
+import TouchAppOutlinedIcon from "@mui/icons-material/TouchAppOutlined";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { BarChart } from "@mui/x-charts/BarChart";
 import MainCard from "@/components/MainCard";
@@ -38,6 +40,7 @@ type Metricas = {
   totalVisitas: number;
   sesionesUnicas: number;
   totalConversiones?: number;
+  rageClicks?: number;
   porDia: { fecha: string; visitas: number }[];
   topPaginas: ItemRanking[];
   topReferrers: ItemRanking[];
@@ -48,6 +51,7 @@ type Metricas = {
   eventosPersonalizados?: ItemRanking[];
   enlacesSalientes?: ItemRanking[];
   paginas404?: ItemRanking[];
+  scrollDepth?: ItemRanking[];
 };
 
 const RANGOS = [
@@ -238,7 +242,7 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
         {metricas ? (
           <Stack spacing={3}>
             <Grid container spacing={2.5}>
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <KpiCard
                   variant="dark"
                   icon={<VisibilityOutlinedIcon />}
@@ -247,7 +251,7 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
                   sublabel="Pageviews en el período"
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <KpiCard
                   variant="light"
                   icon={<FingerprintOutlinedIcon />}
@@ -256,13 +260,22 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
                   sublabel="Visitantes únicos contabilizados"
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <KpiCard
                   variant="light"
                   icon={<TrackChangesOutlinedIcon />}
-                  label="Conversiones & Eventos"
+                  label="Conversiones"
                   value={metricas.totalConversiones ?? 0}
                   sublabel="Acciones clave registradas"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <KpiCard
+                  variant="light"
+                  icon={<TouchAppOutlinedIcon />}
+                  label="Clics de Frustración"
+                  value={metricas.rageClicks ?? 0}
+                  sublabel="Rage clicks detectados"
                 />
               </Grid>
             </Grid>
@@ -308,9 +321,10 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
-                  titulo="Dispositivos de Acceso"
-                  icono={<DevicesOutlinedIcon sx={{ color: verdeOscuro }} />}
-                  datos={metricas.dispositivos}
+                  titulo="Profundidad de Lectura (Scroll)"
+                  icono={<SwapVertOutlinedIcon sx={{ color: verdeOscuro }} />}
+                  datos={metricas.scrollDepth}
+                  emptyText="Sin datos de desplazamiento aún"
                 />
               </Grid>
             </Grid>
@@ -318,17 +332,16 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
             <Grid container spacing={2.5}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
-                  titulo="Navegadores Web"
-                  icono={<WebAssetOutlinedIcon sx={{ color: verde }} />}
-                  datos={metricas.navegadores}
+                  titulo="Dispositivos de Acceso"
+                  icono={<DevicesOutlinedIcon sx={{ color: verde }} />}
+                  datos={metricas.dispositivos}
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
-                  titulo="Campañas de Marketing (UTMs)"
-                  icono={<CampaignOutlinedIcon sx={{ color: verdeOscuro }} />}
-                  datos={metricas.campanas}
-                  emptyText="Sin campañas UTM detectadas en este rango"
+                  titulo="Navegadores Web"
+                  icono={<WebAssetOutlinedIcon sx={{ color: verdeOscuro }} />}
+                  datos={metricas.navegadores}
                 />
               </Grid>
             </Grid>
@@ -344,26 +357,32 @@ export default function ResumenSitio({ siteId }: { siteId: string }) {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TarjetaDistribucion
+                  titulo="Campañas de Marketing (UTMs)"
+                  icono={<CampaignOutlinedIcon sx={{ color: verdeOscuro }} />}
+                  datos={metricas.campanas}
+                  emptyText="Sin campañas UTM detectadas en este rango"
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2.5}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
                   titulo="Páginas 404 Detectadas"
                   icono={<ReportProblemOutlinedIcon sx={{ color: "#EF4444" }} />}
                   datos={metricas.paginas404}
                   emptyText="No se detectaron errores 404 (Todo en orden)"
                 />
               </Grid>
-            </Grid>
-
-            {metricas.eventosPersonalizados && metricas.eventosPersonalizados.length > 0 && (
-              <Grid container spacing={2.5}>
-                <Grid size={{ xs: 12 }}>
-                  <TarjetaDistribucion
-                    titulo="Objetivos y Conversiones Registradas"
-                    icono={<TrackChangesOutlinedIcon sx={{ color: verdeOscuro }} />}
-                    datos={metricas.eventosPersonalizados}
-                    emptyText="Sin eventos de conversión registrados"
-                  />
-                </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TarjetaDistribucion
+                  titulo="Objetivos y Conversiones Registradas"
+                  icono={<TrackChangesOutlinedIcon sx={{ color: verde }} />}
+                  datos={metricas.eventosPersonalizados}
+                  emptyText="Sin eventos de conversión registrados"
+                />
               </Grid>
-            )}
+            </Grid>
           </Stack>
         ) : (
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
