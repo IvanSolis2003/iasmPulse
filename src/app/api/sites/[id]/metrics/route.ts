@@ -32,10 +32,13 @@ export async function GET(
   desde.setUTCHours(0, 0, 0, 0);
   desde.setUTCDate(desde.getUTCDate() - (dias - 1));
 
-  const pageviews = await prisma.event.findMany({
-    where: { siteId: id, type: "pageview", timestamp: { gte: desde } },
-    select: { url: true, referrer: true, sessionId: true, metadata: true, timestamp: true },
+  const todosEventos = await prisma.event.findMany({
+    where: { siteId: id, timestamp: { gte: desde } },
+    select: { type: true, url: true, referrer: true, sessionId: true, metadata: true, timestamp: true },
   });
+
+  const pageviews = todosEventos.filter((e) => e.type === "pageview");
+  const eventosCustom = todosEventos.filter((e) => e.type === "custom");
 
   const porDiaMapa = new Map<string, number>();
   for (let i = 0; i < dias; i++) {
@@ -55,6 +58,8 @@ export async function GET(
   const dispositivosMapa = new Map<string, number>();
   const navegadoresMapa = new Map<string, number>();
   const osMapa = new Map<string, number>();
+  const campanasMapa = new Map<string, number>();
+  const customEventsMapa = new Map<string, number>();
   const sesiones = new Set<string>();
 
   for (const evento of pageviews) {
@@ -72,6 +77,26 @@ export async function GET(
       dispositivosMapa.set(dev, (dispositivosMapa.get(dev) ?? 0) + 1);
       navegadoresMapa.set(browser, (navegadoresMapa.get(browser) ?? 0) + 1);
       osMapa.set(os, (osMapa.get(os) ?? 0) + 1);
+
+      if (meta.utm && typeof meta.utm === "object") {
+        const utm = meta.utm as Record<string, unknown>;
+        const camp = typeof utm.campaign === "string" ? utm.campaign : undefined;
+        const source = typeof utm.source === "string" ? utm.source : undefined;
+        const nombreCampana = camp ? `${camp} (${source || "web"})` : (source ? `Fuente: ${source}` : null);
+        if (nombreCampana) {
+          campanasMapa.set(nombreCampana, (campanasMapa.get(nombreCampana) ?? 0) + 1);
+        }
+      }
+    }
+  }
+
+  for (const c of eventosCustom) {
+    if (c.metadata && typeof c.metadata === "object") {
+      const meta = c.metadata as Record<string, unknown>;
+      const evtName = typeof meta.eventName === "string" ? meta.eventName : "Acción personalizada";
+      customEventsMapa.set(evtName, (customEventsMapa.get(evtName) ?? 0) + 1);
+    } else {
+      customEventsMapa.set("Acción personalizada", (customEventsMapa.get("Acción personalizada") ?? 0) + 1);
     }
   }
 
@@ -90,11 +115,14 @@ export async function GET(
   return NextResponse.json({
     totalVisitas: pageviews.length,
     sesionesUnicas: sesiones.size,
+    totalConversiones: eventosCustom.length,
     porDia: Array.from(porDiaMapa.entries()).map(([fecha, visitas]) => ({ fecha, visitas })),
     topPaginas: topN(paginasMapa, 10),
     topReferrers: topN(referrersMapa, 10),
     dispositivos: topN(dispositivosMapa, 5),
     navegadores: topN(navegadoresMapa, 5),
     sistemasOperativos: topN(osMapa, 5),
+    campanas: topN(campanasMapa, 8),
+    eventosPersonalizados: topN(customEventsMapa, 10),
   });
 }
