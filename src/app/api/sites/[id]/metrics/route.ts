@@ -70,6 +70,11 @@ export async function GET(
     ["100% (final)", 0],
   ]);
   let rageClicksCount = 0;
+  const lcpValores: number[] = [];
+  const clsValores: number[] = [];
+  const ttfbValores: number[] = [];
+  const loadTimeValores: number[] = [];
+
   const paisesMapa = new Map<string, number>();
   const sesiones = new Set<string>();
 
@@ -126,6 +131,11 @@ export async function GET(
         if (depth === "100%") scrollDepthMapa.set("100% (final)", (scrollDepthMapa.get("100% (final)") ?? 0) + 1);
       } else if (evtName === "rage_click") {
         rageClicksCount += 1;
+      } else if (evtName === "web_vitals") {
+        if (typeof meta.lcp === "number" && meta.lcp > 0) lcpValores.push(meta.lcp);
+        if (typeof meta.cls === "number" && meta.cls >= 0) clsValores.push(meta.cls);
+        if (typeof meta.ttfb === "number" && meta.ttfb > 0) ttfbValores.push(meta.ttfb);
+        if (typeof meta.loadTime === "number" && meta.loadTime > 0) loadTimeValores.push(meta.loadTime);
       } else {
         customEventsMapa.set(evtName, (customEventsMapa.get(evtName) ?? 0) + 1);
       }
@@ -153,6 +163,20 @@ export async function GET(
     porcentaje: scrollTotal > 0 ? Math.min(Math.round((cantidad / scrollTotal) * 100), 100) : 0,
   }));
 
+  function promedio(arr: number[]): number {
+    if (arr.length === 0) return 0;
+    return Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10;
+  }
+
+  const avgLcp = promedio(lcpValores);
+  const avgCls = promedio(clsValores);
+  const avgTtfb = promedio(ttfbValores);
+  const avgLoadTime = promedio(loadTimeValores);
+
+  const lcpStatus = avgLcp === 0 ? "none" : avgLcp <= 2500 ? "good" : avgLcp <= 4000 ? "needs-improvement" : "poor";
+  const clsStatus = avgCls === 0 ? "none" : avgCls <= 0.1 ? "good" : avgCls <= 0.25 ? "needs-improvement" : "poor";
+  const ttfbStatus = avgTtfb === 0 ? "none" : avgTtfb <= 800 ? "good" : avgTtfb <= 1800 ? "needs-improvement" : "poor";
+
   return NextResponse.json({
     totalVisitas: pageviews.length,
     sesionesUnicas: sesiones.size,
@@ -170,5 +194,15 @@ export async function GET(
     enlacesSalientes: topN(outboundMapa, 8),
     paginas404: topN(paginas404Mapa, 8),
     scrollDepth: scrollDepthList,
+    webVitals: {
+      avgLcp,
+      avgCls,
+      avgTtfb,
+      avgLoadTime,
+      lcpStatus,
+      clsStatus,
+      ttfbStatus,
+      totalMuestras: lcpValores.length,
+    },
   });
 }
