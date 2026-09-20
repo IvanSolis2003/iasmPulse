@@ -1,6 +1,8 @@
 import prisma from "@/lib/prisma";
 import DashboardShell from "@/components/DashboardShell";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: Readonly<{
